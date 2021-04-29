@@ -39,9 +39,11 @@ public class HomePage {
     @FindBy(css = "#note-description")
     private WebElement noteDescriptionTextarea;
 
-    //@FindBy(css = "div#noteModal button.btn.btn-primary")
     @FindBy(css = "#noteSubmit")
     private WebElement noteSubmitButton;
+
+    @FindBy(css = "#noteTable")
+    private WebElement noteTable;
 
     @FindBy(css = "#notes")
     private List<WebElement> notes;
@@ -55,6 +57,9 @@ public class HomePage {
 
     @FindBy(css = "#credentials")
     private List<WebElement> credentials;
+
+    @FindBy(css = "#credentialTable")
+    private WebElement credentialTable;
 
     @FindBy(css = "#nav-credentials")
     private WebElement navCredentials;
@@ -118,10 +123,8 @@ public class HomePage {
         exec.executeScript("arguments[0].click();", this.noteSubmitButton);
     }
 
-    public void editNote (int listIndex, String noteTitle, String noteDescription) {
-        WebElement note = this.notes.get(listIndex);
-        int iStat = listIndex+1;
-        WebElement buttonEditNote = note.findElement(By.cssSelector("#buttonEditNote" + iStat));
+    public void editNote (int id, String noteTitle, String noteDescription) {
+        WebElement buttonEditNote = noteTable.findElement(By.cssSelector("#buttonEditNote" + id));
         buttonEditNote.click();
         this.noteTitleInput.clear();
         this.noteDescriptionTextarea.clear();
@@ -137,24 +140,18 @@ public class HomePage {
         return this.notes.get(0);
     }
 
-    public String getNoteTitle(int listIndex) {
-        WebElement note = this.notes.get(listIndex);
-        int iStat = listIndex+1;
-        WebElement notetitle = note.findElement(By.cssSelector("#notetitle" + iStat));
+    public String getNoteTitle(int id) {
+        WebElement notetitle = noteTable.findElement(By.cssSelector("#notetitle" + id));
         return notetitle.getText();
     }
 
-    public String getNoteDescription(int listIndex) {
-        WebElement note = this.notes.get(listIndex);
-        int iStat = listIndex+1;
-        WebElement notedescription = note.findElement(By.cssSelector("#notedescription" + iStat));
+    public String getNoteDescription(int id) {
+        WebElement notedescription = noteTable.findElement(By.cssSelector("#notedescription" + id));
         return notedescription.getText();
     }
 
-    public void deleteNote(int listIndex) {
-        WebElement note = this.notes.get(listIndex);
-        int iStat = listIndex+1;
-        WebElement buttonDeleteNote = note.findElement(By.cssSelector("#buttonDeleteNote" + iStat));
+    public void deleteNote(int id) {
+        WebElement buttonDeleteNote = noteTable.findElement(By.cssSelector("#buttonDeleteNote" + id));
         buttonDeleteNote.click();
    }
 
@@ -179,26 +176,16 @@ public class HomePage {
         return this.credentialDialog;
     }
 
-    public WebElement getCredentialFromIndex(int index) {
-        return this.credentials.get(index);
-    }
-
     public void onAddNewCredential() {
         this.addCredentialButton.click();
     }
 
-    public void onEditCredential(int listIndex) {
-        WebElement note = this.credentials.get(listIndex);
-        int iStat = listIndex+1;
-        WebElement buttonEditCredential = note.findElement(By.cssSelector("#buttonEditCredential" + iStat));
+    public void onEditCredential(int id) {
+        WebElement buttonEditCredential = this.credentialTable.findElement(By.cssSelector("#buttonEditCredential" + id));
         buttonEditCredential.click();
     }
 
     public void editCredential(String credentialUrl, String credentialUsername, String credentialPassword) {
-        if(StringUtil.isBlank(credentialUrl)) { credentialUrl = this.credentialUrlInput.getText();  }
-        if(StringUtil.isBlank(credentialUsername)) { credentialUsername = this.credentialUsernameInput.getText(); }
-        if(StringUtil.isBlank(credentialPassword)) { credentialPassword = this.credentialPasswordInput.getText(); }
-
         this.credentialUrlInput.clear();
         this.credentialUsernameInput.clear();
         this.credentialPasswordInput.clear();
@@ -209,41 +196,33 @@ public class HomePage {
     public void createCredential(String credentialUrl, String credentialUsername, String credentialPassword) {
         this.credentialUrlInput.sendKeys(credentialUrl);
         this.credentialUsernameInput.sendKeys(credentialUsername);
+        this.credentialPasswordInput.click();
         this.credentialPasswordInput.sendKeys(credentialPassword);
         exec.executeScript("arguments[0].click();", this.credentialSubmitButton);
     }
 
-    public String getCredentialUrl(int listIndex) {
-        WebElement note = this.credentials.get(listIndex);
-        int iStat = listIndex+1;
-        WebElement credentialurl = note.findElement(By.cssSelector("#credentialurl" + iStat));
+    public String getCredentialPasswordDecrypted() {
+        return this.credentialPasswordInput.getText();
+    }
+
+    public String getCredentialUrl(int id) {
+        WebElement credentialurl = this.credentialTable.findElement(By.cssSelector("#credentialurl" + id));
         return credentialurl.getText();
     }
 
-    public String getCredentialUsername(int listIndex) {
-        WebElement note = this.credentials.get(listIndex);
-        int iStat = listIndex+1;
-        WebElement credentialusername = note.findElement(By.cssSelector("#credentialusername" + iStat));
+    public String getCredentialUsername(int id) {
+        WebElement credentialusername = this.credentialTable.findElement(By.cssSelector("#credentialusername" + id));
         return credentialusername.getText();
     }
 
-    public String getCredentialPassword(int listIndex) {
-        WebElement note = this.credentials.get(listIndex);
-        int iStat = listIndex+1;
-        WebElement credentialpassword = note.findElement(By.cssSelector("#credentialpassword" + iStat));
+    public String getCredentialPassword(int id) {
+        WebElement credentialpassword = this.credentialTable.findElement(By.cssSelector("#credentialpassword" + id));
         return credentialpassword.getText();
     }
 
-    public String getDialogCredentialUrl() {
-        return this.credentialUrlInput.getText();
-    }
-
-    public String getDialogCredentialUsername() {
-        return this.credentialUsernameInput.getText();
-    }
-
-    public String getDialogCredentialPassword() {
-        return this.credentialPasswordInput.getText();
+    public void deleteCredential(int id) {
+        WebElement buttonDeleteCredential = this.credentialTable.findElement(By.cssSelector("#buttonDeleteCredential" + id));
+        buttonDeleteCredential.click();
     }
 
 }

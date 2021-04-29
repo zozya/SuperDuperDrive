@@ -50,9 +50,8 @@ class CloudStorageApplicationTests {
 	private final static String CREDENTIAL_PASSWORD = "pass";
 	private final static String CREDENTIAL_EDIT = "change";
 
-	private final static String KEY_CREDENTIAL_URL = "credential_url";
-	private final static String KEY_CREDENTIAL_USERNAME = "credential_username";
-	private final static String KEY_CREDENTIAL_PASSWORD = "credential_password";
+	private final static int START_ID = 1;
+	private final static int CREDENTIALS_SET_SIZE = 3;
 
 	@BeforeAll
 	static void beforeAll() {
@@ -164,12 +163,12 @@ class CloudStorageApplicationTests {
 		wait20s.until(ExpectedConditions.visibilityOf(homePage.getFirstNote()));
 
 		assertTrue(homePage.getNotesSize() == 1);
-		assertEquals(NOTE_TITLE, homePage.getNoteTitle(0));
-		assertEquals(NOTE_DESCRIPTION, homePage.getNoteDescription(0));
+		assertEquals(NOTE_TITLE, homePage.getNoteTitle(START_ID));
+		assertEquals(NOTE_DESCRIPTION, homePage.getNoteDescription(START_ID));
 	}
 
 	private void editNote() {
-		homePage.editNote(0,NOTE_TITLE + NOTE_EDIT, NOTE_DESCRIPTION + NOTE_EDIT);
+		homePage.editNote(START_ID,NOTE_TITLE + NOTE_EDIT, NOTE_DESCRIPTION + NOTE_EDIT);
 		wait20s.until(ExpectedConditions.urlContains(URL_RESULT));
 		this.checkActualUrl(URL_RESULT);
 
@@ -180,12 +179,12 @@ class CloudStorageApplicationTests {
 		homePage.onNavNotesTab();
 		wait50s.until(ExpectedConditions.visibilityOf(homePage.getFirstNote()));
 
-		assertEquals( NOTE_TITLE + NOTE_EDIT, homePage.getNoteTitle(0));
-		assertEquals(NOTE_DESCRIPTION + NOTE_EDIT, homePage.getNoteDescription(0));
+		assertEquals( NOTE_TITLE + NOTE_EDIT, homePage.getNoteTitle(1));
+		assertEquals(NOTE_DESCRIPTION + NOTE_EDIT, homePage.getNoteDescription(1));
 	}
 
 	private void deleteNote() {
-		homePage.deleteNote(0);
+		homePage.deleteNote(START_ID);
 		wait20s.until(ExpectedConditions.urlContains(URL_RESULT));
 		checkActualUrl(URL_RESULT);
 
@@ -209,15 +208,42 @@ class CloudStorageApplicationTests {
 		wait20s.until(ExpectedConditions.visibilityOf(homePage.getNavCredentials()));
 		assertTrue(homePage.getCredentialsSize() <= 0);
 
-		Map<String, String> mapCredential = this.createCredential();
-		this.editCredential(mapCredential);
-//		this.deleteCredential();
+		this.createCredential(START_ID);
+		this.editCredential(START_ID);
+		this.deleteCredential(START_ID);
+
+		assertTrue(homePage.getCredentialsSize() <= 0);
 	}
 
-	public Map<String, String> createCredential() {
+	@Test
+	public void testCreateDisplayEditDeleteCredentialsSet() {
+		signup();
+		login();
+
+		assertTrue(homePage.isNavCredentialsTabDisplay());
+		homePage.onNavCredentialsTab();
+		wait20s.until(ExpectedConditions.visibilityOf(homePage.getNavCredentials()));
+		assertTrue(homePage.getCredentialsSize() <= 0);
+
+		for(int i=START_ID; i<=CREDENTIALS_SET_SIZE; i++) {
+			this.createCredential(i);
+		}
+		assertTrue(homePage.getCredentialsSize() == CREDENTIALS_SET_SIZE);
+
+		for(int i=START_ID; i<=CREDENTIALS_SET_SIZE; i++) {
+			this.editCredential(i);
+		}
+
+		for(int i=START_ID; i<=CREDENTIALS_SET_SIZE; i++) {
+			this.deleteCredential(i);
+			assertTrue(homePage.getCredentialsSize() == CREDENTIALS_SET_SIZE - i);
+		}
+	}
+
+	private void createCredential(int index) {
 		homePage.onAddNewCredential();
 		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-		homePage.createCredential(CREDENTIAL_URL, CREDENTIAL_USERNAME, CREDENTIAL_PASSWORD);
+		homePage.createCredential(CREDENTIAL_URL + index, CREDENTIAL_USERNAME + index, CREDENTIAL_PASSWORD + index);
 
 		wait20s.until(ExpectedConditions.urlContains(URL_RESULT));
 		this.checkActualUrl(URL_RESULT);
@@ -229,27 +255,24 @@ class CloudStorageApplicationTests {
 		homePage.onNavCredentialsTab();
 		wait20s.until(ExpectedConditions.visibilityOf(homePage.getNavCredentials()));
 
-		assertTrue(homePage.getCredentialsSize() == 1);
-		assertEquals(CREDENTIAL_URL, homePage.getCredentialUrl(0));
-		assertEquals(CREDENTIAL_USERNAME, homePage.getCredentialUsername(0));
-		assertFalse(CREDENTIAL_PASSWORD.equals(homePage.getCredentialPassword(0)));
-
-		Map<String, String> mapCredential = new HashMap<>();
-		mapCredential.put(KEY_CREDENTIAL_URL, homePage.getCredentialUrl(0));
-		mapCredential.put(KEY_CREDENTIAL_USERNAME, homePage.getCredentialUsername(0));
-		mapCredential.put(KEY_CREDENTIAL_PASSWORD, homePage.getCredentialPassword(0));
-		return mapCredential;
+		assertTrue(homePage.getCredentialsSize() == index);
+		assertEquals(CREDENTIAL_URL + index, homePage.getCredentialUrl(index));
+		assertEquals(CREDENTIAL_USERNAME + index, homePage.getCredentialUsername(index));
+		assertFalse((CREDENTIAL_PASSWORD + index).equals(homePage.getCredentialPassword(index)));
 	}
 
-	private void editCredential(Map<String, String> mapCredential) {
-		homePage.onEditCredential(0);
+	private void editCredential(int index) {
+		String passwordBeforeChange = homePage.getCredentialPassword(index);
+
+		homePage.onEditCredential(index);
 		wait20s.until(ExpectedConditions.visibilityOf(homePage.getCredentialModalDialog()));
 
-		assertEquals(mapCredential.get(KEY_CREDENTIAL_URL), homePage.getDialogCredentialUrl());
-		assertEquals(mapCredential.get(KEY_CREDENTIAL_USERNAME), homePage.getDialogCredentialUsername());
-		//assertEquals(mapCredential.get(KEY_CREDENTIAL_PASSWORD), homePage.getDialogCredentialPassword());
+		String passwordDecryptedBeforeChange = homePage.getCredentialPasswordDecrypted();
+		assertFalse(passwordDecryptedBeforeChange.equals(passwordBeforeChange));
 
-		homePage.editCredential(CREDENTIAL_URL + CREDENTIAL_EDIT, CREDENTIAL_USERNAME + CREDENTIAL_EDIT, "");
+		homePage.editCredential(CREDENTIAL_URL + index + CREDENTIAL_EDIT,
+				CREDENTIAL_USERNAME + index + CREDENTIAL_EDIT,
+				CREDENTIAL_PASSWORD + index + CREDENTIAL_EDIT);
 		wait20s.until(ExpectedConditions.urlContains(URL_RESULT));
 		this.checkActualUrl(URL_RESULT);
 
@@ -260,12 +283,25 @@ class CloudStorageApplicationTests {
 		homePage.onNavCredentialsTab();
 		wait50s.until(ExpectedConditions.visibilityOf(homePage.getNavCredentials()));
 
-		assertEquals( CREDENTIAL_URL + CREDENTIAL_EDIT, homePage.getCredentialUrl(0));
-		assertEquals(CREDENTIAL_USERNAME + CREDENTIAL_EDIT, homePage.getCredentialUsername(0));
-		assertEquals(mapCredential.get(KEY_CREDENTIAL_PASSWORD), homePage.getCredentialPassword(0));
+		assertEquals( CREDENTIAL_URL + index + CREDENTIAL_EDIT, homePage.getCredentialUrl(index));
+		assertEquals(CREDENTIAL_USERNAME + index + CREDENTIAL_EDIT, homePage.getCredentialUsername(index));
+		assertFalse((CREDENTIAL_PASSWORD + index + CREDENTIAL_EDIT).equals(homePage.getCredentialPassword(index)));
+		assertFalse(passwordBeforeChange.equals(homePage.getCredentialPassword(index)));
 	}
 
-	//verifies that the home page is accessible
+	private void deleteCredential(int index) {
+		homePage.deleteCredential(index);
+		wait20s.until(ExpectedConditions.urlContains(URL_RESULT));
+		checkActualUrl(URL_RESULT);
+
+		resultPage.onLinkToHome();
+		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+		checkActualUrl(URL_HOME);
+
+		homePage.onNavCredentialsTab();
+	}
+
+	//verifies that the page is accessible
 	private void checkActualUrl(String url) {
 		String expectedUrl = driver.getCurrentUrl();
 		String actualUrl = baseURL + url;
