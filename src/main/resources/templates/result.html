@@ -19,9 +19,7 @@
                 <span>Your changes were not saved. Click <a th:href="@{/home}">here</a> to continue.</span>
             </div>
             <div class="alert alert-danger fill-parent" th:unless="${changeSuccess}">
-                <h1 class="display-5">Error</h1>
                 <span th:text="${changeError}">Example Error Message</span>
-                <span>Click <a th:href="@{/home}">here</a> to continue.</span>
             </div>
         </div>
     </body>

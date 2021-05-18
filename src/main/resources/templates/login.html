@@ -16,7 +16,10 @@
                     Invalid username or password
                 </div>
                 <div id="logout-msg" th:unless="${param.error}" class="alert alert-dark">
-                    You have been logged out
+                    You are logged out
+                </div>
+                <div id="success-msg" th:if="${signupSuccess}" class="alert alert-success">
+                    You successfully signed up!
                 </div>
                 <div class="form-group">
                     <label for="inputUsername">Username</label>

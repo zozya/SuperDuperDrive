@@ -14,9 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
@@ -25,6 +28,7 @@ import java.sql.SQLException;
 
 import java.util.List;
 
+@ControllerAdvice
 @Controller
 @RequestMapping("/home")
 public class HomeController {
@@ -69,18 +73,27 @@ public class HomeController {
 
         User user = userService.getUser(principal.getName());
 
+        if(file == null || file.isEmpty()) {
+            redirectAttributes.addFlashAttribute("changeSuccess", false);
+            redirectAttributes.addFlashAttribute("changeError", "No file was chosen.");
+            return "redirect:/result";
+        }
+
         if(fileService.isFilenameExists(file.getOriginalFilename(), user.getUserid())) {
-            redirectAttributes.addFlashAttribute("changeError", "The  [" + file.getOriginalFilename() + "] already exists.");
+            redirectAttributes.addFlashAttribute("changeSuccess", false);
+            redirectAttributes.addFlashAttribute("changeError", "The File [" + file.getOriginalFilename() + "] is already exists.");
             return "redirect:/result";
         }
 
         try {
             fileService.createFile(file.getOriginalFilename(), file.getContentType(), file.getSize(), user.getUserid(), file.getBytes());
         } catch (IOException ioe) {
+            redirectAttributes.addFlashAttribute("changeSuccess", false);
             redirectAttributes.addFlashAttribute("changeError", "The filedate couldn't be converted.");
             return "redirect:/result";
         }
         catch (SQLException sqle) {
+            redirectAttributes.addFlashAttribute("changeSuccess", false);
             redirectAttributes.addFlashAttribute("changeError", "The file couldn't be saved.");
             return "redirect:/result";
         }
@@ -112,6 +125,7 @@ public class HomeController {
         try {
             fileService.deleteFile(filename, user.getUserid());
         } catch(Exception e) {
+            redirectAttributes.addFlashAttribute("changeSuccess", false);
             redirectAttributes.addFlashAttribute("changeError", "The file couldn't be deleted.");
             return "redirect:/result";
         }
@@ -127,6 +141,7 @@ public class HomeController {
         try {
             noteService.saveOrUpdateNote(user.getUserid(), noteForm.getNoteId(), noteForm.getNoteTitle(), noteForm.getNoteDescription());
         } catch(Exception e) {
+            redirectAttributes.addFlashAttribute("changeSuccess", false);
             redirectAttributes.addFlashAttribute("changeError", "The note couldn't be saved.");
             return "redirect:/result";
         }
@@ -141,6 +156,7 @@ public class HomeController {
         try {
             noteService.deleteNote(noteid, user.getUserid());
         } catch(Exception e) {
+            redirectAttributes.addFlashAttribute("changeSuccess", false);
             redirectAttributes.addFlashAttribute("changeError", "The note couldn't be deleted.");
             return "redirect:/result";
         }
@@ -156,6 +172,7 @@ public class HomeController {
         try {
             credentialService.saveCredentialOrEdit(credentialForm.getUrl(), credentialForm.getUsername(), credentialForm.getPassword(), credentialForm.getCredentialId(), user.getUserid());
         } catch(Exception e) {
+            redirectAttributes.addFlashAttribute("changeSuccess", false);
             redirectAttributes.addFlashAttribute("changeError", "The credential couldn't be saved.");
             return "redirect:/result";
         }
@@ -170,6 +187,7 @@ public class HomeController {
         try {
             credentialService.deleteCredential(credentialid, user.getUserid());
         } catch(Exception e) {
+            redirectAttributes.addFlashAttribute("changeSuccess", false);
             redirectAttributes.addFlashAttribute("changeError", "The credential couldn't be deleted.");
             return "redirect:/result";
         }

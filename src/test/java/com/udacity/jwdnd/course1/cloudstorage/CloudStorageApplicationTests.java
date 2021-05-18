@@ -38,8 +38,8 @@ class CloudStorageApplicationTests {
 
 	private final static String USERNAME = "someone";
 	private final static String PASSWORD = "Abc123";
-	private final static String SIGNUP_SUCCESS_MESSAGE = "You successfully signed up! Please continue to the login page.";
-	private final static String LOGOUT_SUCCESS_MESSAGE = "You have been logged out";
+	private final static String SIGNUP_SUCCESS_MESSAGE = "You successfully signed up!";
+	private final static String LOGOUT_SUCCESS_MESSAGE = "You are logged out";
 
 	private final static String NOTE_TITLE = "Test note";
 	private final static String NOTE_DESCRIPTION = "You should test it";
@@ -112,7 +112,8 @@ class CloudStorageApplicationTests {
 		SignupPage signupPage = new SignupPage(driver);
 		signupPage.signup("Maria", "Test", USERNAME, PASSWORD);
 
-		assertEquals(SIGNUP_SUCCESS_MESSAGE, signupPage.getSuccessMessage());
+		this.checkActualUrl(URL_LOGIN);
+		assertEquals(SIGNUP_SUCCESS_MESSAGE, loginPage.getSuccessMessage());
 	}
 
 	private void login() {
@@ -129,7 +130,6 @@ class CloudStorageApplicationTests {
 		this.checkActualUrl(URL_LOGIN);
 		assertEquals(LOGOUT_SUCCESS_MESSAGE, loginPage.getLogoutMessage());
 		assertEquals(true, loginPage.isLogoutSuccessfull());
-		this.checkActualUrl(URL_HOME);
 	}
 
 	// Test NOTES

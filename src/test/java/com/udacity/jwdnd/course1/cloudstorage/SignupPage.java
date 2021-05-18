@@ -22,9 +22,6 @@ public class SignupPage {
     @FindBy(css = "#submit-button")
     private WebElement submitButton;
 
-    @FindBy(css = "#success-msg")
-    private WebElement successMessage;
-
     @FindBy(css = "#error-msg")
     private WebElement errorMessage;
 
@@ -40,7 +37,4 @@ public class SignupPage {
         this.submitButton.click();
     }
 
-    public String getSuccessMessage() {
-        return successMessage.getText();
-    }
 }

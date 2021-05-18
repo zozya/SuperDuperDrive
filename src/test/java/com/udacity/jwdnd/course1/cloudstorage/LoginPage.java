@@ -19,6 +19,9 @@ public class LoginPage {
     @FindBy(css="#logout-msg")
     private WebElement logoutMessage;
 
+    @FindBy(css="#success-msg")
+    private WebElement successMessage;
+
     public LoginPage(WebDriver webDriver) {
         PageFactory.initElements(webDriver, this);
     }
@@ -36,4 +39,8 @@ public class LoginPage {
     public boolean isLogoutSuccessfull() {
         return this.logoutMessage.isDisplayed();
     }
+    public String getSuccessMessage() {
+        return this.successMessage.getText();
+    }
+
 }
